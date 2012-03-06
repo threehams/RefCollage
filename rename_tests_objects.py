@@ -1,32 +1,54 @@
-import wx
+class DialogOpenFolder(object):
+    pass
 
-class DialogOpenFolder(wx.DirDialog):
+class ListCtrlRename(object):
+    pass
+
+class View(object):
     def __init__(self, *args, **kwargs):
-        wx.DirDialog.__init__(self, *args, **kwargs)
-
-class ListCtrlRename(wx.ListCtrl):
-    def __init__(self, parent=None, style=wx.LC_REPORT|wx.BORDER_SUNKEN,
-                 *args, **kwargs):
-        wx.ListCtrl.__init__(self, parent=parent, style=style, *args, **kwargs)
-        self.InsertColumn(0, 'Old Name')
-        self.InsertColumn(1, 'New Name')
-
-class View(wx.Frame):
-    def __init__(self, *args, **kwargs):
-        self._comboBoxDelimiter = {}
-        self._comboBoxDelimiter["selected"] = ''
-        self._comboBoxDelimiter["options"] = []
+        self._comboBoxDelimiter = {
+            "selected":'',
+            "options":[]
+        }
         self._checkboxFlickr = False
         self._checkboxCapital = False
-        self._listRename = []
+        self._listRename = {}
 
     def start(self):
         pass
 
-    def enableButtonRename(self, state):
+    def start(self):
         pass
 
     def resizeColumns(self, width):
+        pass
+
+    def openDir(self, lastPath):
+        return lastPath
+
+    def showError(self, title, message):
+        pass
+
+    def showInfo(self, title, message):
+        pass
+
+    def showConfirm(self, title, message):
+        return True
+
+    def showProgress(self, progress, title = "", message = ""):
+        return True
+
+    def stopProgress(self):
+        return True
+
+    def showHelpBox(self):
+        pass
+
+    def showAboutBox(self):
+        pass
+
+    # Properties for getting / setting - necessary for translation to wx
+    def enableButtonRename(self, state):
         pass
 
     # Properties to keep wxPython syntax restricted to the View.
@@ -34,7 +56,7 @@ class View(wx.Frame):
         return self._listRename
 
     def _setListRename(self, dict_):
-        _listRename = _dict[:]
+        self._listRename = dict_
 
     def _getComboBoxDelimiter(self):
         return self._comboBoxDelimiter["selected"]
