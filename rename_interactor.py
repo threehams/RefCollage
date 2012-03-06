@@ -7,6 +7,8 @@ class Interactor(object):
         self.view.Bind(wx.EVT_CLOSE, self.onQuit)
         self.view.Bind(wx.EVT_MENU, self.onQuit, self.view.menuFileQuit)
         self.view.Bind(wx.EVT_MENU, self.onOpenDir, self.view.menuFileOpen)
+        self.view.Bind(wx.EVT_MENU, self.onOpenHelp, self.view.menuHelpHelp)
+        self.view.Bind(wx.EVT_MENU, self.onOpenAbout, self.view.menuHelpAbout)
         self.view._comboBoxDelimiter.Bind(
             wx.EVT_COMBOBOX, self.onSettingChanged)
         self.view._checkboxFlickr.Bind(
@@ -17,6 +19,10 @@ class Interactor(object):
             wx.EVT_BUTTON, self.onOpenDir)
         self.view.buttonRename.Bind(
             wx.EVT_BUTTON, self.onRenameClicked)
+        #self.view.Bind(wx.EVT_SIZE, self.onResize)
+
+    #def onResize(self, e):
+    #    self.presenter.resizeCols(e.GetSize()[0])
 
     def onQuit(self, e):
         """Open a close program confirmation"""
@@ -33,3 +39,11 @@ class Interactor(object):
     def onSettingChanged(self, e):
         """Update model whenever settings are changed"""
         self.presenter.settingsChanged()
+
+    def onOpenAbout(self, e):
+        """Opens the About box."""
+        self.presenter.openAbout()
+
+    def onOpenHelp(self, e):
+        """Opens the Help window."""
+        self.presenter.openHelp()

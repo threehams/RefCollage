@@ -26,6 +26,9 @@ class View(wx.Frame):
     def enableButtonRename(self, state):
         pass
 
+    def resizeColumns(self, width):
+        pass
+
     # Properties to keep wxPython syntax restricted to the View.
     def _getListRename(self):
         return self._listRename

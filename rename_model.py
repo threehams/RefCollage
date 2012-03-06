@@ -54,6 +54,9 @@ class Model(object):
         self._loadMemoFlickr()
         self._openedPath = False
 
+        self.interrupt = False
+        self.progress = 0
+
     def changeSettings(self, settings):
         # TODO: Merge duplicated code. Problem: internal vs external method
         if settings["delimiter"] not in Model.DELIMITERS:
@@ -64,7 +67,7 @@ class Model(object):
         self._delimiter = settings["delimiter"]
         self._saveSettings()
         if self._openedPath:
-            return self.getRenameList(self._lastPath)
+            return self._lastPath
 
     def getSettings(self):
         settings = {
@@ -103,19 +106,38 @@ class Model(object):
         json.dump(settings, f)
         f.close()
 
-    def getRenameList(self, path):
+    def createRenameList(self, path):
         """Gets a list of image files, and constructs a dictionary-based rename
         queue based on current settings."""
         self._lastPath = path
         self._saveSettings()
-
         self._renameList = {}
-        structure = os.walk(path)
-        for root, _, files in structure:
+
+        self.progress = 0.0
+        progress = 0.0
+
+        walkLen = 0
+        # Get the total number of files
+        for _, _, files in os.walk(path):
+            walkLen += len(files)
+
+        # TODO: Functions, but refactor for readability
+        # Find the total length of the walk, so we can get accurate progress
+        for root, _, files in os.walk(path):
             for fn in files:
+                # Max out at 99.9% progress until completely done
+                progress += 1
+                self.progress = (progress / walkLen) * 100 - .01
+
+                # Stop on thread interrupt
+                if self.interrupt:
+                    self.interrupt = False
+                    return
+
                 # Ignore any non-image files
                 if not self._isImage(fn):
                     continue
+
                 flickrId = self._isFlickr(fn)
                 if flickrId:
                     newFn = self._getNameFlickr(fn, flickrId)
@@ -137,6 +159,9 @@ class Model(object):
         self._saveMemoFlickr()
         # Enable automatic updating of names on setting changes
         self._openedPath = True
+        self.progress = 100
+
+    def getRenameList(self):
         return self._renameList
 
     def renameFiles(self):

@@ -1,7 +1,5 @@
 """
     Traverses a directory, and normalizes names.
-
-
 """
 import wx
 

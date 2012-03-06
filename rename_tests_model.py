@@ -62,7 +62,8 @@ class MyTestCase(unittest.TestCase):
         m._flickr = True
         m._delimiter = " "
 
-        resultList = m.getRenameList(root)
+        m.createRenameList(root)
+        resultList = m.getRenameList()
         self.assertDictEqual(testSpaceFlickr, resultList)
 
         m = Model()
@@ -70,7 +71,8 @@ class MyTestCase(unittest.TestCase):
         m._flickr = True
         m._delimiter = "_"
 
-        resultList = m.getRenameList(root)
+        m.createRenameList(root)
+        resultList = m.getRenameList()
         self.assertDictEqual(testUnderscoreCapitalFlickr, resultList)
 
         self._removeTempFiles(root)

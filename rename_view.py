@@ -14,26 +14,23 @@ class ListCtrlRename(wx.ListCtrl):
 class View(wx.Frame):
     def __init__(self, *args, **kwargs):
         wx.Frame.__init__(self, *args, **kwargs)
+        self._progress = None
 
         self.SetTitle("Image Renamer")
-        self.SetSize((640,480))
+        self.SetSize((800,600))
 
         menuBar = wx.MenuBar()
         menuFile = wx.Menu()
-        self.menuFileOpen = menuFile.Append(wx.ID_OPEN, '&Open Folder',
+        self.menuFileOpen = menuFile.Append(wx.ID_OPEN, '&Open Folder\tCtrl+O',
                                        'Select a directory')
-        self.menuFileQuit = menuFile.Append(wx.ID_EXIT, '&Quit',
+        self.menuFileQuit = menuFile.Append(wx.ID_EXIT, '&Quit\tCtrl+Q',
                                             'Quit application')
 
         menuHelp = wx.Menu()
-        self.menuHelpHelp = menuHelp.Append(wx.ID_HELP, '&Help',
+        self.menuHelpHelp = menuHelp.Append(wx.ID_HELP, '&Help\tF1',
                                             'View Help files')
         self.menuHelpAbout = menuHelp.Append(wx.ID_ABOUT, '&About',
                                         'About this program')
-
-        #menuOptions = wx.MenuBar()
-        #menuOptions.Append(wx.ID_PREFERENCES, '&Preferences',
-        #                'Select program options')
 
         menuBar.Append(menuFile, title="&File")
         menuBar.Append(menuHelp, title="&Help")
@@ -85,6 +82,10 @@ class View(wx.Frame):
         self.app = wx.App()
         self.app.MainLoop()
 
+    def resizeColumns(self, width):
+        self._listRename.SetColumnWidth(0, width)
+        self._listRename.SetColumnWidth(1, width)
+
     def openDir(self, lastPath):
         dlg = DialogOpenFolder(self, defaultPath = lastPath)
         result = dlg.ShowModal()
@@ -95,26 +96,58 @@ class View(wx.Frame):
             return path
         return None
 
-    def showError(self, errorText):
-        dlg = wx.MessageDialog(None, message=errorText, caption="Error",
+    def showError(self, title, message):
+        dlg = wx.MessageDialog(None, message=message, title=title,
                                style=wx.OK | wx.ICON_ERROR)
         dlg.ShowModal()
         dlg.Destroy()
 
-    def showInfo(self, infoTitle, infoText):
-        dlg = wx.MessageDialog(None, message=infoText, caption=infoTitle,
+    def showInfo(self, title, message):
+        dlg = wx.MessageDialog(None, message=message, caption=title,
                                style=wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
 
-    def showConfirm(self, confirmTitle, confirmText):
-        dlg = wx.MessageDialog(None, caption=confirmTitle, message=confirmText,
+    def showConfirm(self, title, message):
+        dlg = wx.MessageDialog(None, caption=title, message=message,
                                style=wx.OK | wx.CANCEL | wx.ICON_QUESTION)
         result = dlg.ShowModal()
         dlg.Destroy()
         if result == wx.ID_OK:
             return True
         return False
+
+    def showProgress(self, progress, title = "", message = ""):
+        """Creates a new progress dialog box, or updates an existing one.
+        Returns False only if user selects Cancel."""
+        if self._progress:
+            if self._progress.Update(progress):
+                return True
+            return False
+        else:
+            self._progress = wx.ProgressDialog(title=title, message=message)
+            self._progress.Show()
+            return True
+
+    def stopProgress(self):
+        if self._progress:
+            self._progress.Destroy()
+            self._progress = None
+            return True
+        return False
+
+    def showHelpBox(self):
+        pass
+
+    def showAboutBox(self):
+        description = """"""
+
+        info = wx.AboutDialogInfo()
+        info.SetName("Ref Collage")
+        info.SetVersion("0.5")
+        info.SetDescription(description)
+
+        wx.AboutBox(info)
 
     # Properties for getting / setting - necessary for translation to wx
     def enableButtonRename(self, state):
