@@ -6,8 +6,9 @@ All rights reserved.
 
 Description
 -------------------
-A quick rename batch-rename program for images, meant to be later integrated
-into a large image-reference collage program.
+A quick rename batch-rename program for images, with options for delimiter and
+capitalization, meant to be later integrated into a larger image-reference
+collage program.
 
 This version will recognize filenames from Flickr.com, and find the original
 image name from the site by scraping the first few bytes from the page. Other
