@@ -60,7 +60,7 @@ class TestsPresenter(unittest.TestCase):
         self.presenter.openPath()
         self.assertDictEqual(expected, self.view.rename)
 
-        self._removeTempFiles()
+        self._removeTempFiles(root)
 
     def testSettingsChanged(self):
         self.view.flickr = True
