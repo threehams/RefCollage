@@ -96,10 +96,6 @@ to continue without Flickr name lookup, or try again later."
         if confirm:
             self.view.Destroy()
 
-    def about(self):
-        """Opens a confirmation window. Exits the application if Yes."""
-        self.view.showAbout()
-
     def settingsChanged(self):
         """Passes preferences onto the Model for validation and saving."""
         result = {
