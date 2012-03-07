@@ -3,18 +3,8 @@
     and can be used without an interface for testing or alternative control
     (command-line).
 
-    getRenameList(path)
-        Traverses the given directory recursively, and returns a dictionary.
-        Keys are original names, values are modified names.
-
-    renameFiles():
-        Processes the current list of files.
-
-    setOptions():
-        Updates the model with current settings.
-
-    Options:
-    Delimiter       Use [ _-] as a delimiter between words.
+    Settings:
+    Delimiter       Use [ _-.] as a delimiter between words.
     Title           Capitalize the first letter of each word.
     Flickr          If a Flickr image filename is detected, this will attempt
                     to replace the filename with the image title. Check done
@@ -23,7 +13,7 @@
 """
 
 import httplib
-import os, re, logging, json
+import os, re, logging, json, time
 
 class Model(object):
 
@@ -39,7 +29,8 @@ class Model(object):
         "capital":False,
         "lastPath":""}
 
-    IMAGE_EXTENSIONS = (".jpg",".jpeg",".png",".bmp",".tif",".tiff",".tga")
+    IMAGE_EXTENSIONS = (".jpg",".jpeg",".png",".bmp",".tif",".tiff",".tga",
+                        ".gif")
     DELIMITERS = (" ","_","-",".")
 
     # Local memos
@@ -55,7 +46,7 @@ class Model(object):
         self._openedPath = False
 
         self.interrupt = False
-        self.progress = 0
+        self.progress = 0.0
 
     def changeSettings(self, settings):
         # TODO: Merge duplicated code. Problem: internal vs external method
@@ -117,15 +108,13 @@ class Model(object):
         progress = 0.0
 
         walkLen = 0
-        # Get the total number of files
+        # Find the total length of the walk, so we can get accurate progress.
         for _, _, files in os.walk(path):
             walkLen += len(files)
 
-        # TODO: Functions, but refactor for readability
-        # Find the total length of the walk, so we can get accurate progress
         for root, _, files in os.walk(path):
             for fn in files:
-                # Max out at 99.9% progress until completely done
+                # Max out at 99.9% progress until completely done.
                 progress += 1
                 self.progress = (progress / walkLen) * 100 - .01
 
@@ -145,7 +134,7 @@ class Model(object):
                     newFn = self._convertName(fn)
 
                 # Ignore if the filename is the same - but still have to check
-                # for duplicates
+                # for duplicates (edge cases).
                 nameWithPath = os.path.join(root, newFn)
                 dupeName = self._checkDuplicates(nameWithPath)
                 if fn == newFn and not dupeName:
@@ -254,14 +243,13 @@ class Model(object):
 
         return None
 
-    def _getNameFlickr(self, fn, flickrId):
+    def _getNameFlickr(self, fn, flickrId, retry = 0):
         """Opens a connection to Flickr, gets the title of the page loaded,
         removes all characters except [0-9a-Z_-], and clips the title to the
         first five words or 30 characters (whichever is smaller). Returns a
         valid filename with extension.
 
         Example: http://flickr.com/photo.gne?id=6795654383"""
-
         if flickrId in Model.memoFlickr:
             return self._convertName(Model.memoFlickr[flickrId])
 
@@ -275,12 +263,25 @@ class Model(object):
         conn = httplib.HTTPConnection("www.flickr.com")
         conn.request("GET", location)
         res = conn.getresponse()
-        title = res.read(350)
+        numChars = 300 + (retry * 50)
+        title = res.read(numChars)
         conn.close()
 
-        # Take the title from the
-        title = re.search(r"<title>(.*) \| Flickr.*</title>", title).group(1)
+        if "no longer active" in title:
+            return fn
+        if retry > 0:
+            logging.warning("Failed title: {}".format(title))
+        # Split the title from the page
+        title = re.search(r"<title>(.*) \| Flickr.*</title>", title)
+        if title is None:
+            if retry < 3:
+                logging.warning("Flickr name retrieval failed, retrying.")
+                return self._getNameFlickr(fn, flickrId, retry + 1)
+            else:
+                raise IOError("could not retrieve name from Flickr.com")
 
+        else:
+            title = title.group(1)
         # Strip off everything except [0-9a-Z_-]
         title = re.sub("[^\w _-]", "", title)
 
