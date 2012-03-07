@@ -16,7 +16,7 @@ import httplib
 import os, re, logging, json
 
 class Model(object):
-
+    VERSION = "0.51"
     # File locations
     APPDATA_ROOT = os.path.join(os.environ["APPDATA"], "ThreeHams", "RefCollage")
     FILE_SETTINGS = os.path.join(APPDATA_ROOT, "settings.cfg")

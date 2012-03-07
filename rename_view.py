@@ -139,12 +139,12 @@ class View(wx.Frame):
     def showHelpBox(self):
         pass
 
-    def showAboutBox(self):
+    def showAboutBox(self, version):
         description = """"""
 
         info = wx.AboutDialogInfo()
         info.SetName("Ref Collage")
-        info.SetVersion("0.5")
+        info.SetVersion(version)
         info.SetDescription(description)
 
         wx.AboutBox(info)

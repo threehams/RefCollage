@@ -139,4 +139,4 @@ to continue without Flickr name lookup, or try again later."
         self.view.showHelpBox()
 
     def openAbout(self):
-        self.view.showAboutBox()
+        self.view.showAboutBox(self.model.VERSION)
