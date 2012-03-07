@@ -13,7 +13,7 @@
 """
 
 import httplib
-import os, re, logging, json, time
+import os, re, logging, json
 
 class Model(object):
 
