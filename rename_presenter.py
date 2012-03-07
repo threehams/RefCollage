@@ -3,7 +3,8 @@ Name:       presenters.py
 Author:     David Edmondson, adapted from wxPython example from Peter Damoc
 """
 
-import socket, time
+
+import socket, time, os
 from threading import Thread
 
 class threadModelInterrupt(Thread):
@@ -67,7 +68,7 @@ class Presenter(object):
                     renameList = None
                     break
                 time.sleep(0.1)
-        except socket.error:
+        except (socket.error, IOError):
             error = "Cannot connect to flickr.com. Disable the Flickr option \
 to continue without Flickr name lookup, or try again later."
             self.view.showError("Error", error)
@@ -76,18 +77,26 @@ to continue without Flickr name lookup, or try again later."
         self._updateRenameList(renameList)
 
     def _updateRenameList(self, renameList):
-        # Strip off the path for presentation
-        #index = len(path) + 1
-        #renameList = {
-        #    oldFn[index:] : newFn[index:] for oldFn, newFn in renameList.items()
-        #}
+        old = []
+        new = []
+        renameKeys = sorted(
+                            renameList.keys(),
+                            key=lambda k: (k.rsplit(os.sep)[0], k.lower()),
+                            reverse=True)
+
+        path = self.model.getSettings()["lastPath"]
+        pathLen = len(path) + 1
+        for key in renameKeys:
+            old.append(key[pathLen:])
+            new.append(renameList[key][pathLen:])
 
         if not renameList:
-            renameList = {"No files to rename in selected path.":""}
+            old = ["No files to rename in path:"]
+            new = [path]
             self.view.enableButtonRename(False)
         else:
             self.view.enableButtonRename(True)
-        self.view.rename = renameList
+        self.view.rename = (old, new)
 
     def quit(self):
         """Opens a confirmation window. Exits the application if Yes."""

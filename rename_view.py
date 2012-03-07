@@ -157,19 +157,16 @@ class View(wx.Frame):
             self.buttonRename.Disable()
 
     def _getListRename(self):
-        # TODO: Give this a real get method if it's ever needed
-        return None
+        """Returns two lists - first column, second column"""
+        return self._listRename.GetColumn(0), self._listRename.GetColumn(1)
 
-    def _setListRename(self, dict_):
+    def _setListRename(self, (oldList, newList)):
         # TODO: Allow custom sorting
         self._listRename.DeleteAllItems()
         # Sort first by path, then file
-        for oldFn in sorted(
-                            dict_.keys(),
-                            key=lambda k: (k.rsplit(os.sep)[0], k.lower()),
-                            reverse=True):
+        for oldFn, newFn in zip(oldList, newList):
             pos = self._listRename.InsertStringItem(0, oldFn)
-            self._listRename.SetStringItem(pos, 1, dict_[oldFn])
+            self._listRename.SetStringItem(pos, 1, newFn)
 
     def _getComboBoxDelimiter(self):
         return self._comboBoxDelimiter.GetValue()
