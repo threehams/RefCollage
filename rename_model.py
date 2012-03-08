@@ -50,7 +50,7 @@ class Model(object):
 
         self.interrupt = False
         self.progress = 0.0
-        self.version = "0.52"
+        self.version = "0.53"
 
     def changeSettings(self, settings):
         # TODO: Merge duplicated code. Problem: internal vs external method
