@@ -1,3 +1,11 @@
+"""
+Name        rename.py
+Author      David Edmondson
+
+Tests Model-specific methods for basic functionality. Uses images created in
+a platform-independent temporary directory.
+"""
+
 import unittest, os, tempfile, json
 from rename_model import Model
 

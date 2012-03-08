@@ -1,3 +1,11 @@
+"""
+Name        rename_interactor.py
+Author      David Edmondson, adapted from sample by Peter Damoc
+
+Interactor binds event handlers to the View, and calls methods in the Presenter,
+which strips nearly all logic from the visual part of the UI.
+"""
+
 import wx
 
 class Interactor(object):
@@ -7,7 +15,7 @@ class Interactor(object):
         self.view.Bind(wx.EVT_CLOSE, self.onQuit)
         self.view.Bind(wx.EVT_MENU, self.onQuit, self.view.menuFileQuit)
         self.view.Bind(wx.EVT_MENU, self.onOpenDir, self.view.menuFileOpen)
-        self.view.Bind(wx.EVT_MENU, self.onOpenHelp, self.view.menuHelpHelp)
+        #self.view.Bind(wx.EVT_MENU, self.onOpenHelp, self.view.menuHelpHelp)
         self.view.Bind(wx.EVT_MENU, self.onOpenAbout, self.view.menuHelpAbout)
         self.view._comboBoxDelimiter.Bind(
             wx.EVT_COMBOBOX, self.onSettingChanged)

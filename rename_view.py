@@ -1,4 +1,15 @@
-import wx, os
+"""
+Name        rename_view.py
+Author      David Edmondson, adapted from sample by Peter Damoc
+
+View is as passive as possible, receiving data updates from the Presenter, and
+translating wx-specific dialogs and codes into Pythonic language.
+
+The Presenter should not call any wx-specific methods. The View can currently be
+replaced with any other UI toolkit, with changes only made to the Interactor.
+"""
+
+import wx
 
 class DialogOpenFolder(wx.DirDialog):
     def __init__(self, *args, **kwargs):
@@ -19,6 +30,17 @@ class View(wx.Frame):
         self.SetTitle("Image Renamer")
         self.SetSize((800,600))
 
+        panel = wx.Panel(self)
+
+        self._comboBoxDelimiter = wx.ComboBox(panel)
+        self._checkboxFlickr = wx.CheckBox(panel, label="Flickr Lookup")
+        self._checkboxCapital = wx.CheckBox(panel, label="Capital")
+        self._listRename = ListCtrlRename(panel)
+        self.buttonOpen = wx.Button(panel, label="Select Folder")
+        self.buttonRename = wx.Button(panel, label="Rename Files")
+        self._textPath = wx.TextCtrl(panel)
+
+        # Menus first
         menuBar = wx.MenuBar()
         menuFile = wx.Menu()
         self.menuFileOpen = menuFile.Append(wx.ID_OPEN, '&Open Folder\tCtrl+O',
@@ -27,48 +49,67 @@ class View(wx.Frame):
                                             'Quit application')
 
         menuHelp = wx.Menu()
-        self.menuHelpHelp = menuHelp.Append(wx.ID_HELP, '&Help\tF1',
-                                            'View Help files')
+        #self.menuHelpHelp = menuHelp.Append(wx.ID_HELP, '&Help\tF1',
+        #                                    'View Help files')
         self.menuHelpAbout = menuHelp.Append(wx.ID_ABOUT, '&About',
                                         'About this program')
 
         menuBar.Append(menuFile, title="&File")
         menuBar.Append(menuHelp, title="&Help")
 
-        panel = wx.Panel(self)
-
-        sizer = wx.GridBagSizer(7,3)
+        # Set up the basic sizer - all elements fit into this.
+        sizer = wx.GridBagSizer(7,4)
 
         boxDropdowns = wx.BoxSizer(orient=wx.HORIZONTAL)
         textDelimiter = wx.StaticText(panel, label="Delimiter")
-        self._comboBoxDelimiter = wx.ComboBox(panel)
-        boxDropdowns.Add(textDelimiter, flag=wx.LEFT|wx.TOP, border=5)
-        boxDropdowns.Add(self._comboBoxDelimiter, flag=wx.LEFT|wx.TOP, border=5)
+        boxDropdowns.Add(textDelimiter, flag=wx.LEFT|wx.ALIGN_CENTER_VERTICAL,
+                         border=5)
+        boxDropdowns.Add(self._comboBoxDelimiter, flag=wx.LEFT, border=5)
 
-        sizer.Add(boxDropdowns, pos=(0,0))
+        sizer.Add(boxDropdowns, pos=(0,0), flag=wx.TOP, border=5)
+
+        helpDelimiter = wx.StaticText(
+            panel,
+            label="Determines the character used to separate words.")
+        helpFlickr = wx.StaticText(
+            panel,
+            label="Replaces any filename from Flickr with its name from the site.")
+        helpCapital = wx.StaticText(
+            panel,
+            label="Capitalizes the first letter of each word.")
+
+        sizer.Add(helpDelimiter, pos=(0,1),
+                  flag=wx.LEFT|wx.TOP|wx.ALIGN_CENTER_VERTICAL, border=5)
+        sizer.Add(helpFlickr, pos=(2,1), flag=wx.LEFT, border=5)
+        sizer.Add(helpCapital, pos=(3,1), flag=wx.LEFT, border=5)
 
         line = wx.StaticLine(panel)
-        sizer.Add(line, pos=(1,0), span=(1,3),
-                  flag=wx.EXPAND|wx.TOP|wx.BOTTOM, border=10)
+        sizer.Add(line, pos=(1,0), span=(1,4), flag=wx.EXPAND)
 
-        self._checkboxFlickr = wx.CheckBox(panel, label="Flickr Lookup")
-        self._checkboxCapital = wx.CheckBox(panel, label="Capital")
 
-        sizer.Add(self._checkboxFlickr, pos=(2,0))
-        sizer.Add(self._checkboxCapital, pos=(3,0))
+        sizer.Add(self._checkboxFlickr, pos=(2,0),
+                  flag=wx.LEFT, border=5)
+        sizer.Add(self._checkboxCapital, pos=(3,0),
+                  flag=wx.LEFT, border=5)
 
-        self._listRename = ListCtrlRename(panel, size=(-1,200))
-        sizer.Add(self._listRename, pos=(4,0), span=(1,3), flag=wx.EXPAND)
+        sizer.Add(self._listRename, pos=(4,0), span=(1,4), flag=wx.EXPAND)
 
-        self.buttonOpen = wx.Button(panel, label="Select Folder")
-        self.buttonRename = wx.Button(panel, label="Rename Files")
+        boxPath = wx.BoxSizer(orient=wx.HORIZONTAL)
+        labelPath = wx.StaticText(panel, label="Current Path")
+        boxPath.Add(labelPath, flag=wx.LEFT|wx.ALIGN_CENTER_VERTICAL, border=5)
+        boxPath.Add(self._textPath, proportion=1, flag=wx.EXPAND|wx.LEFT,
+                    border=5)
 
-        sizer.Add(self.buttonOpen, pos=(5,1))
-        sizer.Add(self.buttonRename, pos=(5,2))
+        sizer.Add(boxPath, pos=(5,0), span=(1,2),
+                  flag=wx.EXPAND|wx.LEFT|wx.BOTTOM, border=5)
+        sizer.Add(self.buttonOpen, pos=(5,2),
+                  flag=wx.LEFT|wx.BOTTOM, border=5)
+        sizer.Add(self.buttonRename, pos=(5,3),
+                  flag=wx.LEFT|wx.BOTTOM|wx.RIGHT, border=5)
 
         #self.SetMenuBar(menuBar)
 
-        sizer.AddGrowableCol(0)
+        sizer.AddGrowableCol(1)
         sizer.AddGrowableRow(4)
 
         panel.SetSizer(sizer)
@@ -117,15 +158,20 @@ class View(wx.Frame):
             return True
         return False
 
-    def showProgress(self, progress, title = "", message = ""):
+    def showProgress(self, progress, title = "", message = "", abort = False):
         """Creates a new progress dialog box, or updates an existing one.
         Returns False only if user selects Cancel."""
+        if abort:
+            style = wx.PD_APP_MODAL|wx.PD_CAN_ABORT
+        else:
+            style = wx.PD_APP_MODAL
         if self._progress:
-            if self._progress.Update(progress):
+            if self._progress.Update(progress)[0]:
                 return True
             return False
         else:
-            self._progress = wx.ProgressDialog(title=title, message=message)
+            self._progress = wx.ProgressDialog(title=title, message=message,
+                                               style=style)
             self._progress.Show()
             return True
 
@@ -140,12 +186,14 @@ class View(wx.Frame):
         pass
 
     def showAboutBox(self, version):
-        description = """"""
+        description = """Image Rename is an automatic file renamer, done as a \
+code structure test for a larger image-reference collage program."""
 
         info = wx.AboutDialogInfo()
         info.SetName("Ref Collage")
         info.SetVersion(version)
         info.SetDescription(description)
+        info.SetDevelopers(["David Edmondson"])
 
         wx.AboutBox(info)
 
@@ -193,11 +241,18 @@ class View(wx.Frame):
     def _setCheckboxCapital(self, value):
         self._checkboxCapital.SetValue(value)
 
+    def _getTextPath(self):
+        return self._textPath.GetLabel()
+
+    def _setTextPath(self, text):
+        self._textPath.SetLabel(text)
+
     rename = property(_getListRename, _setListRename)
     delimiter = property(_getComboBoxDelimiter, _setComboBoxDelimiter)
     delimiterOptions = property(_getDelimiterOptions, _setDelimiterOptions)
     flickr = property(_getCheckboxFlickr, _setCheckboxFlickr)
     capital = property(_getCheckboxCapital, _setCheckboxCapital)
+    path = property(_getTextPath, _setTextPath)
 
 if __name__ == "__main__":
     app = wx.App()

@@ -1,14 +1,17 @@
 """
-    Model handles all logic for data, with a limited set of public commands,
-    and can be used without an interface for testing or alternative control
-    (command-line).
+Name        rename_model.py
+Author      David Edmondson, adapted from sample by Peter Damoc
 
-    Settings:
-    Delimiter       Use [ _-.] as a delimiter between words.
-    Title           Capitalize the first letter of each word.
-    Flickr          If a Flickr image filename is detected, this will attempt
-                    to replace the filename with the image title. Check done
-                    via http://flickr.com/photo.gne?id=[ID]
+Model handles all logic for data, with a limited set of public commands, and
+can be used without an interface for testing or alternative control (command-
+line).
+
+Settings:
+Delimiter   Use [ _-.] as a delimiter between words.
+Title       Capitalize the first letter of each word.
+Flickr      If a Flickr image filename is detected, this will attempt to replace
+            the filename with the image title. Check done via:
+            http://flickr.com/photo.gne?id=[ID]
 
 """
 
@@ -16,12 +19,12 @@ import httplib
 import os, re, logging, json
 
 class Model(object):
-    VERSION = "0.51"
     # File locations
     APPDATA_ROOT = os.path.join(os.environ["APPDATA"], "ThreeHams", "RefCollage")
     FILE_SETTINGS = os.path.join(APPDATA_ROOT, "settings.cfg")
     FILE_MEMO_FLICKR = os.path.join(APPDATA_ROOT, "memoFlickr.cfg")
     FILE_LOG_ERROR = os.path.join(APPDATA_ROOT, "error.log")
+    FLICKR_REGEX = re.compile(r"([0-9]{6,10})_[0-9a-f]{6,10}[._]")
 
     SETTING_DEFAULT = {
         "delimiter":" ",
@@ -47,6 +50,7 @@ class Model(object):
 
         self.interrupt = False
         self.progress = 0.0
+        self.version = "0.52"
 
     def changeSettings(self, settings):
         # TODO: Merge duplicated code. Problem: internal vs external method
@@ -120,6 +124,8 @@ class Model(object):
 
                 # Stop on thread interrupt
                 if self.interrupt:
+                    self._saveMemoFlickr()  # Keep Flickr progress!
+                    self._renameList = {}   # Don't allow a partial rename list
                     self.interrupt = False
                     return
 
@@ -129,7 +135,11 @@ class Model(object):
 
                 flickrId = self._isFlickr(fn)
                 if flickrId:
-                    newFn = self._getNameFlickr(fn, flickrId)
+                    try:
+                        newFn = self._getNameFlickr(fn, flickrId)
+                    except:
+                        self._saveMemoFlickr()
+                        raise
                 else:
                     newFn = self._convertName(fn)
 
@@ -219,11 +229,11 @@ class Model(object):
         if not self._flickr:
             return False
 
-        if not fn.lower().endswith(Model.IMAGE_EXTENSIONS):
+        if not fn.lower().endswith((".jpg",".jpeg")):
             return False
 
         # Grab the ID while we're checking if it matches
-        result = re.search(r"([0-9].*)_[0-9a-f].*\.", fn.lower())
+        result = Model.FLICKR_REGEX.search(fn.lower())
         if result:
             return result.group(1)
         return False
@@ -253,6 +263,8 @@ class Model(object):
         if flickrId in Model.memoFlickr:
             return self._convertName(Model.memoFlickr[flickrId])
 
+        logging.info("Memo not found. Retrieving name from Flickr.")
+
         # Grab the redirect from the header. 404? Return converted filename
         location = self._getRedirect("flickr.com", "/photo.gne?id=" + flickrId)
         # If 404 or private page - return converted original name
@@ -267,8 +279,8 @@ class Model(object):
         title = res.read(numChars)
         conn.close()
 
-        if "no longer active" in title:
-            return fn
+        if "no longer active" in title or "Please wait" in title:
+            return self._convertName(fn)
         if retry > 0:
             logging.warning("Failed title: {}".format(title))
         # Split the title from the page

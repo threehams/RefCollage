@@ -1,6 +1,16 @@
 """
-Name:       presenters.py
-Author:     David Edmondson, adapted from wxPython example from Peter Damoc
+Name        rename_presenter.py
+Author      David Edmondson, adapted from sample by Peter Damoc
+
+Receives commands from the Interactor based on user input.
+Pulls data from the Model through its API, threading if necessary, and prepares
+and pushes it to the View through its API.
+
+No data should ever be stored in the Presenter; it should always be pulled from
+the Model's API.
+
+No wx-specific methods should be called directly from the Presenter - it should
+know nothing about the UI itself.
 """
 
 
@@ -52,8 +62,9 @@ class Presenter(object):
         worker.start()
         # Main progress loop
         try:
-            self.view.showProgress(0, "Please Wait...",
-                                   "Generating rename list...")
+            self.view.showProgress(0, title="Please Wait...",
+                                   message="Generating rename list...",
+                                   abort=True)
             while True:
                 # Continue progress-update loop until 100% done, or interrupted
                 if self.model.progress == 100:
@@ -77,26 +88,29 @@ to continue without Flickr name lookup, or try again later."
         self._updateRenameList(renameList)
 
     def _updateRenameList(self, renameList):
+        path = self.model.getSettings()["lastPath"]
+        if not renameList:
+            old = ["No files to rename in path:"]
+            new = [path]
+            self.view.enableButtonRename(False)
+            self.view.rename = (old, new)
+            return None
+
+        self.view.enableButtonRename(True)
+
         old = []
         new = []
-        renameKeys = sorted(
-                            renameList.keys(),
+        renameKeys = sorted(renameList.keys(),
                             key=lambda k: (k.rsplit(os.sep)[0], k.lower()),
                             reverse=True)
 
-        path = self.model.getSettings()["lastPath"]
         pathLen = len(path) + 1
         for key in renameKeys:
             old.append(key[pathLen:])
             new.append(renameList[key][pathLen:])
 
-        if not renameList:
-            old = ["No files to rename in path:"]
-            new = [path]
-            self.view.enableButtonRename(False)
-        else:
-            self.view.enableButtonRename(True)
         self.view.rename = (old, new)
+        self.view.path = path
 
     def quit(self):
         """Opens a confirmation window. Exits the application if Yes."""
@@ -108,8 +122,8 @@ to continue without Flickr name lookup, or try again later."
     def settingsChanged(self):
         """Passes preferences onto the Model for validation and saving."""
         result = {
-            "flickr": self.view.flickr,
-            "capital": self.view.capital,
+            "flickr":    self.view.flickr,
+            "capital":   self.view.capital,
             "delimiter": self.view.delimiter
         }
         openedPath = self.model.changeSettings(result)
@@ -139,4 +153,4 @@ to continue without Flickr name lookup, or try again later."
         self.view.showHelpBox()
 
     def openAbout(self):
-        self.view.showAboutBox(self.model.VERSION)
+        self.view.showAboutBox(self.model.version)
