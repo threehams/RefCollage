@@ -1,3 +1,11 @@
+"""
+Name        rename_tests_objects.py
+Author      David Edmondson
+
+Mock objects for Presenter testing. All UI-specific functionality stripped out,
+allowing this to run with no input.
+"""
+
 class DialogOpenFolder(object):
     pass
 

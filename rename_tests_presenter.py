@@ -1,3 +1,10 @@
+"""
+Name        rename_tests_presenter.py
+Author      David Edmondson
+
+Tests Presenter interaction with Model, using mock objects for Interactor
+and View. Uses images created in a platform-independent temporary directory.
+"""
 import unittest, os, tempfile
 from rename_model import Model
 from rename_presenter import Presenter

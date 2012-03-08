@@ -1,5 +1,5 @@
 """
-Name        rename.py
+Name        rename_tests_model.py
 Author      David Edmondson
 
 Tests Model-specific methods for basic functionality. Uses images created in
