@@ -112,7 +112,7 @@ class MyTestCase(unittest.TestCase):
         expectSettings = {"flickr":True,
                           "capital":True,
                           "delimiter":" ",
-                          "lastPath":None
+                          "lastPath":""
         }
 
         f = open(m.FILE_SETTINGS, "w+")
