@@ -19,49 +19,49 @@ class ListCtrlRename(wx.ListCtrl):
     def __init__(self, parent=None, style=wx.LC_REPORT|wx.BORDER_SUNKEN,
                  *args, **kwargs):
         wx.ListCtrl.__init__(self, parent=parent, style=style, *args, **kwargs)
-        self.InsertColumn(0, 'Old Name')
-        self.InsertColumn(1, 'New Name')
+        self.InsertColumn(0, u'Old Name')
+        self.InsertColumn(1, u'New Name')
 
 class View(wx.Frame):
     def __init__(self, *args, **kwargs):
         wx.Frame.__init__(self, *args, **kwargs)
         self._progress = None
 
-        self.SetTitle("Image Renamer")
+        self.SetTitle(u"Image Renamer")
         self.SetSize((800,600))
 
         panel = wx.Panel(self)
 
         self._comboBoxDelimiter = wx.ComboBox(panel)
-        self._checkboxFlickr = wx.CheckBox(panel, label="Flickr Lookup")
-        self._checkboxCapital = wx.CheckBox(panel, label="Capital")
+        self._checkboxFlickr = wx.CheckBox(panel, label=u"Flickr Lookup")
+        self._checkboxCapital = wx.CheckBox(panel, label=u"Capital")
         self._listRename = ListCtrlRename(panel)
-        self.buttonOpen = wx.Button(panel, label="Select Folder")
-        self.buttonRename = wx.Button(panel, label="Rename Files")
+        self.buttonOpen = wx.Button(panel, label=u"Select Folder")
+        self.buttonRename = wx.Button(panel, label=u"Rename Files")
         self._textPath = wx.TextCtrl(panel)
 
         # Menus first
         menuBar = wx.MenuBar()
         menuFile = wx.Menu()
-        self.menuFileOpen = menuFile.Append(wx.ID_OPEN, '&Open Folder\tCtrl+O',
-                                       'Select a directory')
-        self.menuFileQuit = menuFile.Append(wx.ID_EXIT, '&Quit\tCtrl+Q',
-                                            'Quit application')
+        self.menuFileOpen = menuFile.Append(wx.ID_OPEN, u'&Open Folder\tCtrl+O',
+                                       u'Select a directory')
+        self.menuFileQuit = menuFile.Append(wx.ID_EXIT, u'&Quit\tCtrl+Q',
+                                            u'Quit application')
 
         menuHelp = wx.Menu()
         #self.menuHelpHelp = menuHelp.Append(wx.ID_HELP, '&Help\tF1',
         #                                    'View Help files')
-        self.menuHelpAbout = menuHelp.Append(wx.ID_ABOUT, '&About',
-                                        'About this program')
+        self.menuHelpAbout = menuHelp.Append(wx.ID_ABOUT, u'&About',
+                                        u'About this program')
 
-        menuBar.Append(menuFile, title="&File")
-        menuBar.Append(menuHelp, title="&Help")
+        menuBar.Append(menuFile, title=u"&File")
+        menuBar.Append(menuHelp, title=u"&Help")
 
         # Set up the basic sizer - all elements fit into this.
         sizer = wx.GridBagSizer(7,4)
 
         boxDropdowns = wx.BoxSizer(orient=wx.HORIZONTAL)
-        textDelimiter = wx.StaticText(panel, label="Delimiter")
+        textDelimiter = wx.StaticText(panel, label=u"Delimiter")
         boxDropdowns.Add(textDelimiter, flag=wx.LEFT|wx.ALIGN_CENTER_VERTICAL,
                          border=5)
         boxDropdowns.Add(self._comboBoxDelimiter, flag=wx.LEFT, border=5)
@@ -70,13 +70,13 @@ class View(wx.Frame):
 
         helpDelimiter = wx.StaticText(
             panel,
-            label="Determines the character used to separate words.")
+            label=u"Determines the character used to separate words.")
         helpFlickr = wx.StaticText(
             panel,
-            label="Replaces any filename from Flickr with its name from the site.")
+            label=u"Replaces any filename from Flickr with its name from the site.")
         helpCapital = wx.StaticText(
             panel,
-            label="Capitalizes the first letter of each word.")
+            label=u"Capitalizes the first letter of each word.")
 
         sizer.Add(helpDelimiter, pos=(0,1),
                   flag=wx.LEFT|wx.TOP|wx.ALIGN_CENTER_VERTICAL, border=5)
@@ -95,7 +95,7 @@ class View(wx.Frame):
         sizer.Add(self._listRename, pos=(4,0), span=(1,4), flag=wx.EXPAND)
 
         boxPath = wx.BoxSizer(orient=wx.HORIZONTAL)
-        labelPath = wx.StaticText(panel, label="Current Path")
+        labelPath = wx.StaticText(panel, label=u"Current Path")
         boxPath.Add(labelPath, flag=wx.LEFT|wx.ALIGN_CENTER_VERTICAL, border=5)
         boxPath.Add(self._textPath, proportion=1, flag=wx.EXPAND|wx.LEFT,
                     border=5)
@@ -186,14 +186,14 @@ class View(wx.Frame):
         pass
 
     def showAboutBox(self, version):
-        description = """Image Rename is an automatic file renamer, done as a \
+        description = u"""Image Rename is an automatic file renamer, done as a \
 code structure test for a larger image-reference collage program."""
 
         info = wx.AboutDialogInfo()
-        info.SetName("Ref Collage")
+        info.SetName(u"Ref Collage")
         info.SetVersion(version)
         info.SetDescription(description)
-        info.SetDevelopers(["David Edmondson"])
+        info.SetDevelopers([u"David Edmondson"])
 
         wx.AboutBox(info)
 

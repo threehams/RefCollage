@@ -152,8 +152,8 @@ class MyTestCase(unittest.TestCase):
             m._isFlickr("6795654383_a7d7351d30_z.jpg"), "6795654383")
         self.assertEqual(
             m._isFlickr("4321305_2309f0b_m.jpeg"), "4321305")
-        self.assertEqual(
-            m._isFlickr("23102211321532_2012B_o.JPG"), "23102211321532")
+        self.assertFalse(
+            m._isFlickr("23102211321532_2012B_o.JPG"))
         self.assertFalse(m._isFlickr("32165342_a7d7351d30"))
 
         # Test with Flickr off

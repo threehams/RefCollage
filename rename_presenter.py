@@ -62,8 +62,8 @@ class Presenter(object):
         worker.start()
         # Main progress loop
         try:
-            self.view.showProgress(0, title="Please Wait...",
-                                   message="Generating rename list...",
+            self.view.showProgress(0, title=u"Please Wait...",
+                                   message=u"Generating rename list...",
                                    abort=True)
             while True:
                 # Continue progress-update loop until 100% done, or interrupted
@@ -80,9 +80,9 @@ class Presenter(object):
                     break
                 time.sleep(0.1)
         except (socket.error, IOError):
-            error = "Cannot connect to flickr.com. Disable the Flickr option \
+            error = u"Cannot connect to flickr.com. Disable the Flickr option \
 to continue without Flickr name lookup, or try again later."
-            self.view.showError("Error", error)
+            self.view.showError(u"Error", error)
             renameList = None
 
         self._updateRenameList(renameList)
@@ -90,7 +90,7 @@ to continue without Flickr name lookup, or try again later."
     def _updateRenameList(self, renameList):
         path = self.model.getSettings()["lastPath"]
         if not renameList:
-            old = ["No files to rename in path:"]
+            old = [u"No files to rename in path:"]
             new = [path]
             self.view.enableButtonRename(False)
             self.view.rename = (old, new)
@@ -98,8 +98,7 @@ to continue without Flickr name lookup, or try again later."
 
         self.view.enableButtonRename(True)
 
-        old = []
-        new = []
+        old, new = [], []
         renameKeys = sorted(renameList.keys(),
                             key=lambda k: (k.rsplit(os.sep)[0], k.lower()),
                             reverse=True)
@@ -115,7 +114,7 @@ to continue without Flickr name lookup, or try again later."
     def quit(self):
         """Opens a confirmation window. Exits the application if Yes."""
         confirm = self.view.showConfirm(
-            "Confirm Quit", "Are you sure you want to quit?")
+            u"Confirm Quit", u"Are you sure you want to quit?")
         if confirm:
             self.view.Destroy()
 
@@ -134,20 +133,20 @@ to continue without Flickr name lookup, or try again later."
         """Halts UI interaction, and informs the Model to run its current
         rename queue."""
         confirm = self.view.showConfirm(
-            "Confirm Rename",
-            "Rename files?"
+            u"Confirm Rename",
+            u"Rename files?"
         )
         if not confirm:
             return None
         try:
             numRename = self.model.renameFiles()
             self.view.showInfo(
-                "Rename Successful",
-                "{} files renamed successfully.".format(numRename)
+                u"Rename Successful",
+                u"{} files renamed successfully.".format(numRename)
             )
         except (IOError, WindowsError) as e:
             self.view.showError(
-                "Error occurred during rename: \n{}".format(e))
+                u"Error occurred during rename: \n{}".format(e))
 
     def openHelp(self):
         self.view.showHelpBox()

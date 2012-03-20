@@ -20,7 +20,10 @@ class View(object):
         }
         self._checkboxFlickr = False
         self._checkboxCapital = False
-        self._listRename = {}
+        self._listRename = [
+            [],
+            []
+        ]
 
     def start(self):
         pass
@@ -43,7 +46,7 @@ class View(object):
     def showConfirm(self, title, message):
         return True
 
-    def showProgress(self, progress, title = "", message = ""):
+    def showProgress(self, progress, title = "", message = "", abort=False):
         return True
 
     def stopProgress(self):
@@ -61,10 +64,11 @@ class View(object):
 
     # Properties to keep wxPython syntax restricted to the View.
     def _getListRename(self):
-        return self._listRename
+        return self._listRename[0], self._listRename[1]
 
-    def _setListRename(self, dict_):
-        self._listRename = dict_
+    def _setListRename(self, (list1, list2)):
+        self._listRename[0] = list1
+        self._listRename[1] = list2
 
     def _getComboBoxDelimiter(self):
         return self._comboBoxDelimiter["selected"]

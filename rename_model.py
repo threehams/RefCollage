@@ -53,7 +53,6 @@ class Model(object):
         self.version = "0.53"
 
     def changeSettings(self, settings):
-        # TODO: Merge duplicated code. Problem: internal vs external method
         if settings["delimiter"] not in Model.DELIMITERS:
             raise TypeError("invalid delimiter: {}".format(settings["delimiter"]))
 
@@ -81,7 +80,7 @@ class Model(object):
             logging.warning("no settings data found, starting from scratch")
             settings = Model.SETTING_DEFAULT
         f.close()
-        # TODO: Merge duplicated code. Problem: internal vs external method
+        # TODO: Figure out a better way to store settings (less conversion)
         self._flickr = settings["flickr"]
         self._capital = settings["capital"]
         self._delimiter = settings["delimiter"]
@@ -262,8 +261,6 @@ class Model(object):
         Example: http://flickr.com/photo.gne?id=6795654383"""
         if flickrId in Model.memoFlickr:
             return self._convertName(Model.memoFlickr[flickrId])
-
-        logging.info("Memo not found. Retrieving name from Flickr.")
 
         # Grab the redirect from the header. 404? Return converted filename
         location = self._getRedirect("flickr.com", "/photo.gne?id=" + flickrId)

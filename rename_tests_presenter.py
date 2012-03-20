@@ -53,10 +53,13 @@ class TestsPresenter(unittest.TestCase):
             "6795654383_a7d7351d30_z.jpg":"6795654383 a7d7351d30 z.jpg",
             "6888049103_0e43f63926_o.jpg":"6888049103 0e43f63926 o.jpg"
         }
-        expected = {
-            os.path.join(root, k) : os.path.join(root, v)
-            for (k, v) in expected.items()
-        }
+        old, new = [], []
+        expectedKeys = sorted(expected.keys(),
+                              key=lambda k: (k.rsplit(os.sep)[0], k.lower()),
+                              reverse=True)
+        for key in expectedKeys:
+            old.append(key)
+            new.append(expected[key])
         settings = {
             "delimiter":" ",
             "flickr":False,
@@ -65,7 +68,11 @@ class TestsPresenter(unittest.TestCase):
         self.model.changeSettings(settings)
         self.model._lastPath = root
         self.presenter.openPath()
-        self.assertDictEqual(expected, self.view.rename)
+
+        oldFn, newFn = self.view.rename
+        for k, v in zip(old, new):
+            self.assertIn(k, oldFn)
+            self.assertIn(v, newFn)
 
         self._removeTempFiles(root)
 
