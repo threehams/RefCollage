@@ -68,8 +68,7 @@ class Model(object):
             "flickr":self._flickr,
             "capital":self._capital,
             "delimiter":self._delimiter,
-            "lastPath":self._lastPath
-        }
+            "lastPath":self._lastPath}
         return settings
 
     def _loadSettings(self):
@@ -94,8 +93,7 @@ class Model(object):
             "flickr":self._flickr,
             "capital":self._capital,
             "delimiter":self._delimiter,
-            "lastPath":self._lastPath
-        }
+            "lastPath":self._lastPath}
         f = open(Model.FILE_SETTINGS, "w+")
         json.dump(settings, f)
         f.close()
@@ -190,8 +188,7 @@ class Model(object):
         for fn in (
             Model.FILE_SETTINGS,
             Model.FILE_LOG_ERROR,
-            Model.FILE_MEMO_FLICKR
-        ):
+            Model.FILE_MEMO_FLICKR):
             if not os.path.isfile(fn):
                 open(fn, "w+b").close()
 

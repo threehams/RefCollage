@@ -107,8 +107,6 @@ class View(wx.Frame):
         sizer.Add(self.buttonRename, pos=(5,3),
                   flag=wx.LEFT|wx.BOTTOM|wx.RIGHT, border=5)
 
-        #self.SetMenuBar(menuBar)
-
         sizer.AddGrowableCol(1)
         sizer.AddGrowableRow(4)
 

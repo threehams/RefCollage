@@ -58,7 +58,7 @@ class Presenter(object):
 
     def _getRenameList(self, path):
         worker = threadModelInterrupt(target=self.model.createRenameList,
-                                    args=(path, ))
+                                    args=(path,))
         worker.start()
         # Main progress loop
         try:
@@ -123,8 +123,7 @@ to continue without Flickr name lookup, or try again later."
         result = {
             "flickr":    self.view.flickr,
             "capital":   self.view.capital,
-            "delimiter": self.view.delimiter
-        }
+            "delimiter": self.view.delimiter}
         openedPath = self.model.changeSettings(result)
         if openedPath:
             self._getRenameList(openedPath)
@@ -134,16 +133,14 @@ to continue without Flickr name lookup, or try again later."
         rename queue."""
         confirm = self.view.showConfirm(
             u"Confirm Rename",
-            u"Rename files?"
-        )
+            u"Rename files?")
         if not confirm:
             return None
         try:
             numRename = self.model.renameFiles()
             self.view.showInfo(
                 u"Rename Successful",
-                u"{} files renamed successfully.".format(numRename)
-            )
+                u"{} files renamed successfully.".format(numRename))
         except (IOError, WindowsError) as e:
             self.view.showError(
                 u"Error occurred during rename: \n{}".format(e))

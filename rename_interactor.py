@@ -15,6 +15,7 @@ class Interactor(object):
         self.view.Bind(wx.EVT_CLOSE, self.onQuit)
         self.view.Bind(wx.EVT_MENU, self.onQuit, self.view.menuFileQuit)
         self.view.Bind(wx.EVT_MENU, self.onOpenDir, self.view.menuFileOpen)
+        # TODO: Get me some help!
         #self.view.Bind(wx.EVT_MENU, self.onOpenHelp, self.view.menuHelpHelp)
         self.view.Bind(wx.EVT_MENU, self.onOpenAbout, self.view.menuHelpAbout)
         self.view._comboBoxDelimiter.Bind(
@@ -27,10 +28,6 @@ class Interactor(object):
             wx.EVT_BUTTON, self.onOpenDir)
         self.view.buttonRename.Bind(
             wx.EVT_BUTTON, self.onRenameClicked)
-        #self.view.Bind(wx.EVT_SIZE, self.onResize)
-
-    #def onResize(self, e):
-    #    self.presenter.resizeCols(e.GetSize()[0])
 
     def onQuit(self, e):
         """Open a close program confirmation"""
