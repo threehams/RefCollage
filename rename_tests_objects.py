@@ -16,14 +16,12 @@ class View(object):
     def __init__(self, *args, **kwargs):
         self._comboBoxDelimiter = {
             "selected":'',
-            "options":[]
-        }
+            "options":[]}
         self._checkboxFlickr = False
         self._checkboxCapital = False
         self._listRename = [
             [],
-            []
-        ]
+            []]
 
     def start(self):
         pass
@@ -99,8 +97,6 @@ class View(object):
     delimiterOptions = property(_getDelimiterOptions, _setDelimiterOptions)
     flickr = property(_getCheckboxFlickr, _setCheckboxFlickr)
     capital = property(_getCheckboxCapital, _setCheckboxCapital)
-
-import wx
 
 class Interactor(object):
     def install(self, presenter, view):

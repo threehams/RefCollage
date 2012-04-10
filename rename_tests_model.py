@@ -9,8 +9,8 @@ a platform-independent temporary directory.
 import unittest, os, tempfile, json
 from rename_model import Model
 
-class MyTestCase(unittest.TestCase):
-    def _createTempFiles(self):
+class TestModelFiles(unittest.TestCase):
+    def setUp(self):
         self.tempImages = [
             "_104!.JPG",
             "31;42;87.jpg",
@@ -21,23 +21,19 @@ class MyTestCase(unittest.TestCase):
             "6795654383_a7d7351d30_z.jpg",
             "6888049103_0e43f63926_o.jpg",
             "679563_a30_z.exe",
-            "init.ini"
-        ]
-
-        root = tempfile.mkdtemp()
+            "init.ini"]
+        self.root = tempfile.mkdtemp()
         for fn in self.tempImages:
-            open(os.path.join(root, fn), "w+b").close()
-        return root
+            open(os.path.join(self.root, fn), "w+b").close()
 
-    def _removeTempFiles(self, root):
+    def tearDown(self):
         for fn in self.tempImages:
-            os.remove(os.path.join(root, fn))
+            os.remove(os.path.join(self.root, fn))
 
     def testGetRenameList(self):
         """Test that the correct files are found and renamed."""
         self.maxDiff = None
 
-        root = self._createTempFiles()
         testSpaceFlickr = {
             "_104!.JPG":                   "104!.jpg",
             "31   .PNG":                   "31.png",
@@ -45,12 +41,10 @@ class MyTestCase(unittest.TestCase):
             "too.many.dots.png.jpg":       "too many dots png.jpg",
             "32165342_a7d7351d30_o.jpg":   "32165342 a7d7351d30 o.jpg",
             "6795654383_a7d7351d30_z.jpg": "And loves the noblest frailty of the mind John Dryden.jpg",
-            "6888049103_0e43f63926_o.jpg": "DughiTile Oakwd KARL.jpg"
-        }
+            "6888049103_0e43f63926_o.jpg": "DughiTile Oakwd KARL.jpg"}
         testSpaceFlickr = {
-            os.path.join(root, k) : os.path.join(root, v)
-            for (k, v) in testSpaceFlickr.items()
-        }
+            os.path.join(self.root, k) : os.path.join(self.root, v)
+            for (k, v) in testSpaceFlickr.items()}
         testUnderscoreCapitalFlickr = {
             "_104!.JPG":                   "104!.jpg",
             "31   .PNG":                   "31.png",
@@ -58,19 +52,17 @@ class MyTestCase(unittest.TestCase):
             "too.many.dots.png.jpg":       "Too_Many_Dots_Png.jpg",
             "32165342_a7d7351d30_o.jpg":   "32165342_A7D7351D30_O.jpg",
             "6795654383_a7d7351d30_z.jpg": "And_Loves_The_Noblest_Frailty_Of_The_Mind_John_Dryden.jpg",
-            "6888049103_0e43f63926_o.jpg": "Dughitile_Oakwd_Karl.jpg"
-        }
+            "6888049103_0e43f63926_o.jpg": "Dughitile_Oakwd_Karl.jpg"}
         testUnderscoreCapitalFlickr = {
-            os.path.join(root, k) : os.path.join(root, v)
-            for (k, v) in testUnderscoreCapitalFlickr.items()
-        }
+            os.path.join(self.root, k) : os.path.join(self.root, v)
+            for (k, v) in testUnderscoreCapitalFlickr.items()}
 
         m = Model()
         m._capital = False
         m._flickr = True
         m._delimiter = " "
 
-        m.createRenameList(root)
+        m.createRenameList(self.root)
         resultList = m.getRenameList()
         self.assertDictEqual(testSpaceFlickr, resultList)
 
@@ -79,12 +71,11 @@ class MyTestCase(unittest.TestCase):
         m._flickr = True
         m._delimiter = "_"
 
-        m.createRenameList(root)
+        m.createRenameList(self.root)
         resultList = m.getRenameList()
         self.assertDictEqual(testUnderscoreCapitalFlickr, resultList)
 
-        self._removeTempFiles(root)
-
+class TestModelNoFiles(unittest.TestCase):
     def testGetRedirect(self):
         """Test that the function catches 404 and authentication issues."""
         m = Model()
@@ -93,17 +84,13 @@ class MyTestCase(unittest.TestCase):
         m._delimiter = " "
         self.assertEqual(
             m._getRedirect("flickr.com", "/photo.gne?id=2816803094"),
-            "/photos/30073770@N07/2816803094"
-        )
+            "/photos/30073770@N07/2816803094")
         self.assertIn(
             "signin",
-            m._getRedirect("flickr.com", "/photo.gne?id=2816803022")
-        )
+            m._getRedirect("flickr.com", "/photo.gne?id=2816803022"))
         self.assertEqual(
             m._getRedirect("flickr.com", "/photo.gne?id=9216803042"),
-            None
-        )
-
+            None)
 
     def testLoadSettings(self):
         """Test that settings are correctly loaded, and exceptions are raised."""
@@ -112,8 +99,7 @@ class MyTestCase(unittest.TestCase):
         expectSettings = {"flickr":True,
                           "capital":True,
                           "delimiter":" ",
-                          "lastPath":""
-        }
+                          "lastPath":""}
 
         f = open(m.FILE_SETTINGS, "w+")
         json.dump(expectSettings, f)
@@ -134,8 +120,7 @@ class MyTestCase(unittest.TestCase):
             "42_24.jpg":"42 24.jpg",
             "42_42.jpg":"42 42.jpg",
             "42-42.jpg":"42 42 (1).jpg",
-            "42.jpg.png":"42.jpg.png",
-        }
+            "42.jpg.png":"42.jpg.png"}
         self.assertEqual(m._checkDuplicates("42 24.jpg"), "42 24 (1).jpg")
         self.assertEqual(m._checkDuplicates("42 42.jpg"), "42 42 (2).jpg")
         self.assertEqual(m._checkDuplicates("42.jpg.png"), "42.jpg (1).png")
