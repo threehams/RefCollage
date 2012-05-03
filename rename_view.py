@@ -10,7 +10,6 @@ replaced with any other UI toolkit, with changes only made to the Interactor.
 """
 
 import wx
-import time
 
 class DialogOpenFolder(wx.DirDialog):
     def __init__(self, *args, **kwargs):
