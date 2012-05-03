@@ -10,6 +10,7 @@ replaced with any other UI toolkit, with changes only made to the Interactor.
 """
 
 import wx
+import time
 
 class DialogOpenFolder(wx.DirDialog):
     def __init__(self, *args, **kwargs):
@@ -159,15 +160,15 @@ class View(wx.Frame):
     def showProgress(self, progress, title = "", message = "", abort = False):
         """Creates a new progress dialog box, or updates an existing one.
         Returns False only if user selects Cancel."""
-        if abort:
-            style = wx.PD_APP_MODAL|wx.PD_CAN_ABORT
-        else:
-            style = wx.PD_APP_MODAL
         if self._progress:
             if self._progress.Update(progress)[0]:
                 return True
             return False
         else:
+            if abort:
+                style = wx.PD_AUTO_HIDE|wx.PD_CAN_ABORT
+            else:
+                style = wx.PD_AUTO_HIDE
             self._progress = wx.ProgressDialog(title=title, message=message,
                                                style=style)
             self._progress.Show()
@@ -175,8 +176,8 @@ class View(wx.Frame):
 
     def stopProgress(self):
         if self._progress:
+            self._progress.Update(100)
             self._progress.Destroy()
-            self._progress = None
             return True
         return False
 

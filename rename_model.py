@@ -40,7 +40,6 @@ class Model(object):
     memoFlickr = {}
 
     def __init__(self):
-        """Initialize options to defaults."""
         self._loadSettings()
 
         self._renameList = {}
@@ -53,13 +52,19 @@ class Model(object):
         self.version = "0.53"
 
     def changeSettings(self, settings):
+        """Validate settings from the presenter and save.
+
+        If a directory has already been selected, this returns the current path,
+        so the presenter can handle UI for retrieval of the new rename list."""
+
         if settings["delimiter"] not in Model.DELIMITERS:
-            raise TypeError("invalid delimiter: {}".format(settings["delimiter"]))
+            raise ValueError("invalid delimiter: {}".format(settings["delimiter"]))
 
         self._flickr = settings["flickr"]
         self._capital = settings["capital"]
         self._delimiter = settings["delimiter"]
         self._saveSettings()
+
         if self._openedPath:
             return self._lastPath
 
@@ -71,22 +76,45 @@ class Model(object):
             "lastPath":self._lastPath}
         return settings
 
-    def _loadSettings(self):
-        f = open(Model.FILE_SETTINGS, "r")
+    def _validateSetting(self, name, settings, arrayCheck = None,
+                         default = None, instance = None):
+        """Validates a setting. If validation fails, returns default if available,
+        then arrayCheck[0], then None if neither are available"""
         try:
+            if instance and isinstance(settings[name], instance):
+                return settings[name]
+            if arrayCheck and settings[name] in arrayCheck:
+                return settings[name]
+        except KeyError:
+            pass
+
+        logging.warning(
+            "invalid setting found for {}, setting to default".format(name))
+        if default is not None:
+            return default
+        if arrayCheck:
+            return arrayCheck[0]
+
+    def _loadSettings(self):
+        try:
+            f = open(Model.FILE_SETTINGS, "r")
             settings = json.load(f)
-        except ValueError:
+            f.close()
+        except (IOError, ValueError):
             logging.warning("no settings data found, starting from scratch")
             settings = Model.SETTING_DEFAULT
-        f.close()
-        # TODO: Figure out a better way to store settings (less conversion)
-        self._flickr = settings["flickr"]
-        self._capital = settings["capital"]
-        self._delimiter = settings["delimiter"]
-        try:
-            self._lastPath = settings["lastPath"]
-        except KeyError:
-            self._lastPath = ""
+
+        # Validate settings before blindly accepting!
+
+        self._flickr = self._validateSetting(
+            "flickr", settings, arrayCheck=(False, True))
+        self._capital = self._validateSetting(
+            "capital", settings, arrayCheck=(False, True))
+        self._delimiter = self._validateSetting(
+            "delimiter", settings, arrayCheck=Model.DELIMITERS)
+        self._lastPath = self._validateSetting(
+            "lastPath", settings, instance=basestring, default="")
+        self._saveSettings()
 
     def _saveSettings(self):
         settings = {
@@ -191,7 +219,6 @@ class Model(object):
             Model.FILE_MEMO_FLICKR):
             if not os.path.isfile(fn):
                 open(fn, "w+b").close()
-
 
     def _loadMemoFlickr(self):
         """Loads the cached Flickr name list from disk."""
@@ -306,11 +333,8 @@ class Model(object):
             raise TypeError("file " + str(fn) + " is not an image")
 
         # Extract the extension, lower() it, and save it for later.
-        try:
-            baseName, ext = fn.rsplit(".", 1)
-            ext = "." + ext.lower()
-        except IndexError:
-            raise TypeError("filename " + str(fn) + " does not contain an extension!")
+        baseName, ext = fn.rsplit(".", 1)
+        ext = "." + ext.lower()
 
         # Strip leading and trailing delimiters, then replace others
         baseName = re.sub("[. _-]+", self._delimiter, baseName.strip("_- ."))
