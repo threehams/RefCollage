@@ -51,6 +51,8 @@ class Model(object):
         self.progress = 0.0
         self.version = "0.53"
 
+        logging.basicConfig(filename=Model.FILE_LOG_ERROR,level=logging.WARNING)
+
     def changeSettings(self, settings):
         """Validate settings from the presenter and save.
 
