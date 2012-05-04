@@ -10,6 +10,7 @@ replaced with any other UI toolkit, with changes only made to the Interactor.
 """
 
 import wx
+from icon import getIcon
 
 class DialogOpenFolder(wx.DirDialog):
     def __init__(self, *args, **kwargs):
@@ -113,6 +114,9 @@ class View(wx.Frame):
         panel.SetSizer(sizer)
 
         self.SetMenuBar(menuBar)
+
+        self.tbIcon = getIcon()
+        self.SetIcon(self.tbIcon)
 
         self.Centre()
         self.Show()
