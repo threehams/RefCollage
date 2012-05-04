@@ -8,7 +8,7 @@ and View. Uses images created in a platform-independent temporary directory.
 import unittest, os, tempfile
 from rename_model import Model
 from rename_presenter import Presenter
-from rename_tests_objects import Interactor, View
+from test.rename_tests_objects import Interactor, View
 
 class TestPresenterRequiringTemporaryFiles(unittest.TestCase):
     def setUp(self):

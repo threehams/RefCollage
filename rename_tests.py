@@ -1,6 +1,6 @@
 import unittest
-from rename_tests_model import TestRequiringTemporaryFiles, TestNotRequiringTemporaryFiles
-from rename_tests_presenter import TestPresenterRequiringTemporaryFiles, TestPresenterNotRequiringTemporaryFiles
+from test.rename_tests_model import TestRequiringTemporaryFiles, TestNotRequiringTemporaryFiles
+from test.rename_tests_presenter import TestPresenterRequiringTemporaryFiles, TestPresenterNotRequiringTemporaryFiles
 
 if __name__ == "__main__":
     suite = [
